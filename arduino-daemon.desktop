@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Exec=sh arduino-daemon.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=Arduino Daemon
