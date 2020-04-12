@@ -44,6 +44,8 @@ CRGB Minutes2[LEDS_COUNT];
 CRGB Divider[LEDS_COUNT];
 CRGB Hours1[LEDS_COUNT];
 CRGB Hours2[LEDS_COUNT];
+int parallelIndexes[10] = {5,4,6,3,7,2,8,1,9,0};
+const boolean USE_PARALLEL = true;
 
 /*
   initialize settings
@@ -268,6 +270,7 @@ int lastTime[4];
 */
 int currentMinute1, currentMinute2, currentHour1, currentHour2;
 
+int ddd = 0;
 void loop() {
 
   // take actual time from clock module
@@ -349,14 +352,36 @@ void loop() {
   [feature] also, it should be possibility to handle parallel lines
 */
 void processGroup(CRGB * ledsArray, int animationIndex, int currentDigitIndex) {
-  // if animation running
-  if (isAnimationRunning(animationIndex)) {
-    ledsArray[9 - (animations[animationIndex])] = GLOBAL_COLOR;
-    updateAnimation(animationIndex);
-
-    // otherwise
+  /*
+    hard way: we have two parallel led strips
+    ->[]->[]->[]->[]->[]-┐
+    []<-[]<-[]<-[]<-[]<--┘
+  */
+  if (USE_PARALLEL){ 
+    // if animation running
+    if (isAnimationRunning(animationIndex)) {
+      ledsArray[parallelIndexes[animations[animationIndex]]] = GLOBAL_COLOR;
+      updateAnimation(animationIndex);
+  
+      // otherwise
+    } else {
+      ledsArray[parallelIndexes[currentDigitIndex]] = GLOBAL_COLOR;
+    }
+  /*
+    simple way: we have straight led strip
+    ->[]->[]->[]->[]->[]->[]->[]->[]->[]->[]
+    ->[]->[]->[]->[]->[]->[]->[]->[]->[]->[]
+  */
   } else {
-    ledsArray[9 - currentDigitIndex] = GLOBAL_COLOR;
+    // if animation running
+    if (isAnimationRunning(animationIndex)) {
+      ledsArray[9 - (animations[animationIndex])] = GLOBAL_COLOR;
+      updateAnimation(animationIndex);
+  
+      // otherwise
+    } else {
+      ledsArray[9 - currentDigitIndex] = GLOBAL_COLOR;
+    }
   }
 }
 
