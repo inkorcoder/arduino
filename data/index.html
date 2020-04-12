@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Clock</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<link rel="stylesheet" href="style.css">
+	<meta name="theme-color" content="#fff">
+	<script src="jquery.js"></script>
+</head>
+<body>
+
+	<main>
+
+		<section class="main">
+			<div class="time">
+				<span id="h">12</span>
+				<span>:</span>
+				<span id="m">34</span>
+				<span>:</span>
+				<span id="s">48</span>
+			</div>
+			<div class="date">12.03.2019</div>
+		</section>
+		<ul class="tabs">
+			<li class="active">View</li>
+			<li>Color</li>
+			<li>Net</li>
+		</ul>
+
+		<section class="tab t1 active">
+			<div class="content">
+<!-- 				<div class="row">
+					<div class="col-xs-4">
+						<select id="hours"></select>
+						<small>Часы</small>
+					</div>
+					<div class="col-xs-4">
+						<select id="minutes"></select>
+						<small>Минуты</small>
+					</div>
+					<div class="col-xs-4">
+						<select id="seconds"></select>
+						<small>Секунды</small>
+					</div>
+				</div> -->
+
+				<h2>Show</h2>
+				<div id="displayMode">
+					<div class="checkbox">
+						<input type="radio" name="display-mode" id="clockMode" value="clock" checked>
+						<label for="clockMode">Time</label>
+					</div>
+					<div class="checkbox">
+						<input type="radio" name="display-mode" id="dateMode" value="date">
+						<label for="dateMode">Date</label>
+					</div>
+				</div>
+
+				<h2>Mode</h2>
+				<div id="nightMode">
+					<div class="checkbox">
+						<input type="radio" name="night-mode" id="disabled" value="false" checked>
+						<label for="disabled">Day mode</label>
+					</div>
+					<div class="checkbox">
+						<input type="radio" name="night-mode" id="enabled" value="true">
+						<label for="enabled">Night mode</label>
+					</div>
+				</div>
+
+			</div>
+		</section>
+
+		<section class="tab t2">
+			<div class="content">
+				<!-- <div class="checkbox">
+					<input type="checkbox" id="forAll">
+					<label for="forAll">Для всех</label>
+				</div> -->
+<!-- 				<div class="radio-group">
+					<input type="radio" name="use-for" id="useAll" checked>
+					<label for="useAll">Для всех</label>
+					<input type="radio" name="use-for" id="usePersonally">
+					<label for="usePersonally">Отдельно</label>
+				</div> -->
+				<!-- <div class="row align-center hidden" data-activate-by="#useAll" data-deactivate-by="#usePersonally"></div> -->
+				<!-- <ul class="symbols-list hidden" data-activate-by="#usePersonally" data-deactivate-by="#useAll">
+					<li><div class="radio-group vertical" id="symbol1Group"></div></li>
+					<li><div class="radio-group vertical" id="symbol2Group"></div></li>
+					<li><div class="radio-group vertical" id="symbol3Group"></div></li>
+					<li><div class="radio-group vertical" id="symbol4Group"></div></li>
+					<li><div class="radio-group vertical" id="symbol5Group"></div></li>
+				</ul> -->
+				<h2>RGB scheme</h2>
+				<div class="row offset-top middle-xs">
+					<div class="col-xs-3">Red</div>
+					<div class="col-xs-8">
+						<div class="input-range">
+							<input type="range" id="red" min="0" max="255" value="100" step="1">
+						</div>
+					</div>
+					<div class="col-xs-1">
+						<small>0</small>
+					</div>
+				</div>
+				<div class="row offset-top middle-xs">
+					<div class="col-xs-3">Green</div>
+					<div class="col-xs-8">
+						<div class="input-range">
+							<input type="range" id="green" min="0" max="255" value="100" step="1">
+						</div>
+					</div>
+					<div class="col-xs-1">
+						<small>0</small>
+					</div>
+				</div>
+				<div class="row offset-top middle-xs">
+					<div class="col-xs-3">Blue</div>
+					<div class="col-xs-8">
+						<div class="input-range">
+							<input type="range" id="blue" min="0" max="255" value="100" step="1">
+						</div>
+					</div>
+					<div class="col-xs-1">
+						<small>0</small>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="tab t3">
+			<div class="content">
+				<h2>Connection</h2>
+				<input type="text" placeholder="Ssid" class="input" id="ssid" maxlength="30">
+				<input type="text" placeholder="password" class="input" id="password" maxlength="30">
+				<button id="connect">Connect</button>
+				<hr>
+				<button id="resetConnection">Reset connection</button>
+			</div>
+		</section>
+
+	</main>
+
+	<script src="script.js"></script>
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,500,600,700|Roboto:400,700&amp;subset=cyrillic" rel="stylesheet">
+
+</body>
+</html>
