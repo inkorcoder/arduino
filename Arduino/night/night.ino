@@ -1,12 +1,48 @@
+/* Amount of leds */
+short MAX_LEDS = 12;
+
+/*
+  Input pin
+  It is output of operational amplifier (D2 chip)
+*/
+short INPUT_PIN = 13;
+
+/*
+  Detector is a complicated unit and contains three resistors,
+  and operational amplifier (D2, LM358), which is playing role
+  of comparator (check if voltage on photoresistor is higher)
+  We don't need to power up it by the main supply,
+  because of current leak.
+  So we need to turn it on only when we're measuring output
+  and checking whether it's time to light up or not.
+*/
+short ADDITIONAL_VCC_PIN = 8;
+
+/*
+  Leds on the scheme could be on very different places,
+  so it is an option to make correct queue of leds for having
+  opportunity to loop through it
+*/
+short leds[12] = {7, 6, 5, 3, 4, 2, 1, 11, 12, 9, 10};
+
+/*
+  Index of current led turned on
+  Again, for the best power economy - we don't need to turn on
+  all leds at same time.
+  As our eyes has some sort of perception delay - we can add a delay
+  between leds and if it's not too long - you won't see it.
+  But it gives us a huge economy.
+*/
+short currentIndex = 0;
+short DELAY = 2;
+
 /* time markers */
-long unsigned
-     lastTime = 0,
-     currentTime = 0;
+long unsigned lastTime = 0;
+long unsigned currentTime = 0;
 
 /* lighting triggers */
-boolean
-     isLighting = false,
-     lasWasLight = false;
+boolean isLighting = false;
+boolean lasWasLight = false;
 
 /*
   lighting time. The Atmega328 will work at 8MHz, and in this mode
@@ -19,16 +55,15 @@ long lightingTime = 450000; /* 60 * 8 */
 
 
 /********************************************************************
-  S E T U P
+  MAIN  LOOP
 ********************************************************************/
 void setup() {
 
-  /* on this step we need to set up our inputs and outputs */
-  pinMode(2, OUTPUT);
-  pinMode(4, INPUT);
-  for (int j = 5; j < 10; j++) {
-    pinMode(j, OUTPUT);
+  /* setting up inputs and outputs */
+  for (short i = 1; i <= MAX_LEDS + 2; i++) {
+    pinMode(i, OUTPUT);
   }
+  pinMode(INPUT_PIN, INPUT);
 
   /*
     also, we need to attach interrupting for making the "wake up"
@@ -40,17 +75,16 @@ void setup() {
   lastTime = millis();
 }
 
+
+
 /* interruption markers */
-boolean
-     isInterrupted = false,
-     isLongTimeout = false;
+boolean isInterrupted = false;
+boolean isLongTimeout = false;
 
 
 /********************************************************************
-  M A I N  L O O P
+  MAIN  LOOP
 ********************************************************************/
-/* small counter for the main loop */
-int i = 5;
 void loop() {
 
   /* first we need - is to find out our current time */
@@ -63,7 +97,7 @@ void loop() {
 
     /*
       if the timeout was done, or if we're loopping if we have a day
-      we need to check the state and update time marker 
+      we need to check the state and update time marker
     */
     lastTime = currentTime;
 
@@ -72,7 +106,7 @@ void loop() {
       based on photoresistor, and we don't need a interference from
       our shining LEDs
     */
-    disableLeds();
+    reset();
 
     /*
       again, it was disabled from final version, but you can set
@@ -85,9 +119,9 @@ void loop() {
     /* ang click back out flag */
     isLongTimeout = false;
 
-  /*
-    STEP 1
-  */
+    /*
+      STEP 1
+    */
   } else {
 
     /*
@@ -115,7 +149,7 @@ void loop() {
       /* and checking the current state */
       checkState();
 
-    /* after the first time the star waked up we will go through this */
+      /* after the first time the star waked up we will go through this */
     } else if (isLighting && !lasWasLight) {
 
       /*
@@ -124,48 +158,63 @@ void loop() {
       */
       isLongTimeout = true;
 
-      /* we need to disable all LEDs */
-      disableLeds();
-      delayMicroseconds(100);
+      /* we need to disable all leds */
+      reset();
 
-      /*
-        and, we're initialize the small counter previously
-        each time we're going through this statement we will
-        turn on only one LED, and after that trick our consumption
-        will be really small. Don't forget: this star will work on
-        3 AA batteries
-      */
-      digitalWrite(i, HIGH);
-      i++;
-      /*
-        5...9 it's just because we have digital outputs
-        from 5 to 9 on our Atmega328
-      */
-      i = (i > 9) ? 5 : i;
+      /* and turn on current led */
+      set(currentIndex);
+
+      /* update index */
+      currentIndex = (currentIndex >= MAX_LEDS - 1) ? 0 : ++currentIndex;
+
+      /* and make delay */
+      delay(DELAY);
 
       /*
         it needs for looping again and again each 8 seconds
-        if we have a day. On this step we're moving to STEP 1 
+        if we have a day. On this step we're moving to STEP 1
       */
     } else {
       lastTime = currentTime - lightingTime - 100;
     }
 
   }
+}
 
+/* reset all leds */
+void reset() {
+  for (short i = 1; i <= MAX_LEDS + 2; i++) {
+    /* exept input and outpu pins */
+    if ((i == INPUT_PIN) || (i == ADDITIONAL_VCC_PIN)) {
+      continue;
+    }
+    digitalWrite(i, LOW);
+  }
+}
+
+/* turn on all leds */
+void setAll() {
+  for (short i = 1; i <= MAX_LEDS + 2; i++) {
+    /* exept input and output pins */
+    if ((i == INPUT_PIN) || (i == ADDITIONAL_VCC_PIN)) {
+      continue;
+    }
+    digitalWrite(i, HIGH);
+  }
+}
+
+/* set specific led by index */
+void set(short index) {
+  digitalWrite(leds[index], HIGH);
 }
 
 
 /********************************************************************
-  C H E C K I N G  T H E  S T A T E
+  CHECKING THE STATE
 ********************************************************************/
 void checkState() {
-  /*
-    in my scheme i have a power line for my comparator and
-    photoresistor circle. And it attached to 2nd pin on Atmega328
-    So, i need to turn it on
-  */
-  digitalWrite(2, HIGH);
+
+  digitalWrite(ADDITIONAL_VCC_PIN, HIGH);
   /* wait 10 milliseconds */
   delay(10);
   /* update the old flag for last state */
@@ -174,23 +223,23 @@ void checkState() {
     and check the current state, the output of comparator is attached
     to 4th pin on Atmega328
   */
-  isLighting = (digitalRead(4) == 1) ? true : false;
+  isLighting = (digitalRead(INPUT_PIN) == HIGH) ? true : false;
   /* turn off the power line */
-  digitalWrite(2, LOW);
+  digitalWrite(ADDITIONAL_VCC_PIN, LOW);
 
   /*
     it's just for indication. On my project i have the one extra LED
     attached to my 10th pin. I need to blink it (turn it on, wait, and
     turn it off). So, we can see the moment of checking the state
   */
-  digitalWrite(10, HIGH);
-  delay(20);
-  digitalWrite(10, LOW);
+  digitalWrite(leds[5], HIGH);
+  delay(50);
+  digitalWrite(leds[5], LOW);
 }
 
 
 /********************************************************************
-  D E E P  S L E E P
+  DEEP SLEEP
 
   all this tricks is documented in Atmega328 datasheet, but it's so
   complicated. I've found it on youtube and it's more understandable
@@ -228,16 +277,6 @@ void doSleep() {
 void doLongSleep() {
   for (int s = 0; s < 5; s++) {
     doSleep();
-  }
-}
-
-/*
-  turning off all LEDs, again, i have the LEDs attached
-  to 5...9 pins on Atmega
-*/
-void disableLeds() {
-  for (int j = 5; j < 10; j++) {
-    digitalWrite(j, LOW);
   }
 }
 
